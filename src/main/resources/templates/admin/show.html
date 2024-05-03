@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>user info</title>
+</head>
+<body>
+    <p th:text="'Name and LastName: ' + ${user.getName()} + ' ' + ${user.getLastName()}">VALUE</p>
+    <p th:text="'Username: ' + ${user.getUsername()}">VALUE</p>
+    <p th:text="${'Email: ' + user.getEmail()}">VALUE</p>
+    <h3>Roles: </h3>
+    <ul>
+        <li th:each="role: ${user.getRoles()}"
+            th:text="${role.getRole()}"></li>
+    </ul>
+    <br/>
+    <a th:href="@{/admin/{id}/edit(id=${user.getId()})}">Edit</a>
+    <br/>
+    <form th:method="DELETE" th:action="@{{id}(id=${user.getId()})}">
+        <input type="submit" value="Delete user">
+    </form>
+    <br/>
+    <a href="/admin">back to main page</a>
+</body>
+</html>
