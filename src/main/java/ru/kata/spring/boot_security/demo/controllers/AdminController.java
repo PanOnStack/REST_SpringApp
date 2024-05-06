@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.services.UserService;
 
+import java.util.Collections;
+import java.util.HashSet;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -33,7 +36,9 @@ public class AdminController {
 
     @GetMapping("/new")
     public String newUser(Model model) {
-        model.addAttribute("user", new User());
+        User user = new User();
+        user.setRoles(new HashSet<>(userService.findAllRoles()));
+        model.addAttribute("user", user);
         return "admin/new";
     }
 
@@ -45,6 +50,8 @@ public class AdminController {
 
     @GetMapping("/{id}/edit")
     public String editUser(@PathVariable("id") int id, Model model) {
+        User user = userService.findOne(id);
+        user.setRoles(new HashSet<>(userService.findAllRoles()));
         model.addAttribute("user", userService.findOne(id));
         return "admin/edit";
     }

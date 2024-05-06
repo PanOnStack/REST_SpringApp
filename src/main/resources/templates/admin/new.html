@@ -21,8 +21,15 @@
         <label for="email">Email: </label>
         <input type="text" th:field="*{email}" id="email"/>
         <br/>
+        <select th:field="*{roles}" name="roles" multiple>
+            <option th:each="role: ${user.getRoles()}"
+                    th:value="${role.getId()}"
+                    th:text="${role.getRoleName()}"></option>
+        </select>
+        <br/>
         <br/>
         <input  type="submit" value="add new user">
+        <a href="/admin">cancel</a>
     </form>
 </body>
 </html>

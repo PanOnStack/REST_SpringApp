@@ -11,7 +11,7 @@
     <h3>Roles: </h3>
     <ul>
         <li th:each="role: ${user.getRoles()}"
-            th:text="${role.getRole()}"></li>
+            th:text="${role.getRoleName()}"></li>
     </ul>
     <br/>
     <a th:href="@{/admin/{id}/edit(id=${user.getId()})}">Edit</a>
