@@ -1,13 +1,13 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.services.UserService;
-
-import java.util.Collections;
 import java.util.HashSet;
 
 @Controller
@@ -22,38 +22,21 @@ public class AdminController {
     }
 
     @GetMapping()
-    public String index(Model model) {
+    public String index(@AuthenticationPrincipal UserDetails authenticated, Model model) {
+        User admin = (User) authenticated;
+        User newUser = new User();
+        newUser.setRoles(new HashSet<>(userService.findAllRoles()));
+        model.addAttribute("newUser", newUser);
+        model.addAttribute("admin", admin);
         model.addAttribute("users", userService.findAll());
+        model.addAttribute("roles", new HashSet<>(userService.findAllRoles()));
         return "admin/index";
-    }
-
-    @GetMapping("/{id}")
-    public String showUser(@PathVariable("id") int id, Model model) {
-
-        model.addAttribute("user", userService.findOne(id));
-        return "admin/show";
-    }
-
-    @GetMapping("/new")
-    public String newUser(Model model) {
-        User user = new User();
-        user.setRoles(new HashSet<>(userService.findAllRoles()));
-        model.addAttribute("user", user);
-        return "admin/new";
     }
 
     @PostMapping()
     public String create(@ModelAttribute("user") User user) {
         userService.save(user);
         return "redirect:/admin";
-    }
-
-    @GetMapping("/{id}/edit")
-    public String editUser(@PathVariable("id") int id, Model model) {
-        User user = userService.findOne(id);
-        user.setRoles(new HashSet<>(userService.findAllRoles()));
-        model.addAttribute("user", userService.findOne(id));
-        return "admin/edit";
     }
 
     @PutMapping("/{id}")
