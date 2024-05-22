@@ -37,14 +37,15 @@ public class WebSecurityConfig  {
         http
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/rest/**").permitAll()
+                        //.requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form.
                         successHandler(successUserHandler)
                         .permitAll()
-                )
+                ).csrf().disable()
                 .logout((logout) -> logout.logoutUrl("/logout").logoutSuccessUrl("/login"));
 
         return http.build();
