@@ -1,41 +1,47 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
 import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import ru.kata.spring.boot_security.demo.DTO.UserDTO;
+import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.services.UserService;
 import ru.kata.spring.boot_security.demo.util.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/rest/users")
 public class AdminRestController {
 
     private final UserService userService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public AdminRestController(UserService userService) {
+    public AdminRestController(UserService userService, ModelMapper modelMapper) {
         this.userService = userService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping()
-    public List<User> getAllUsers() {
-        return userService.findAll();
+    public List<UserDTO> getAllUsers() {
+        return userService.findAll().stream().map(this::convertToUserDTO).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable() int id) {
-        return userService.findOne(id);
+    public UserDTO getUserById(@PathVariable() int id) {
+        return convertToUserDTO(userService.findOne(id));
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> createUser(@RequestBody @Valid User user,
+    public ResponseEntity<HttpStatus> createUser(@RequestBody @Valid UserDTO userDTO,
                                                  BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
         StringBuilder errorMsg = new StringBuilder();
@@ -47,12 +53,12 @@ public class AdminRestController {
         }
         throw new UserNotCreatedException(errorMsg.toString());
         }
-        userService.save(user);
+        userService.save(convertToUser(userDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PutMapping
-    public ResponseEntity<HttpStatus> updateUser(@RequestBody @Valid User user,
+    public ResponseEntity<HttpStatus> updateUser(@RequestBody @Valid UserDTO userDTO,
                                                  BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             StringBuilder errorMsg = new StringBuilder();
@@ -64,6 +70,7 @@ public class AdminRestController {
             }
             throw new UserNotUpdatedException(errorMsg.toString());
         }
+        User user = convertToUser(userDTO);
         userService.update(user.getId(), user);
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -73,6 +80,18 @@ public class AdminRestController {
         userService.findOne(id);
         userService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    private UserDTO convertToUserDTO(User user) {
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        userDTO.setRoles(user.getRoles().stream().map(Role::getRoleName).collect(Collectors.toSet()));
+        return userDTO;
+    }
+
+    private User convertToUser(UserDTO userDTO) {
+        User user = modelMapper.map(userDTO, User.class);
+        user.setRoles(userDTO.getRoles().stream().map(userService::findRole).collect(Collectors.toSet()));
+        return user;
     }
 
     @ExceptionHandler

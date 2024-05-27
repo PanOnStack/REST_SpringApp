@@ -46,6 +46,12 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
+    public Role findRole(String roleName) {
+        roleName = String.format("ROLE_%s", roleName);
+        return roleRepository.findByRole(roleName);
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findWithRolesByUsername(username);
         if ( user == null) {
